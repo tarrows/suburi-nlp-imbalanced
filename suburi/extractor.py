@@ -10,20 +10,34 @@ def extract_xml(root_dir: Path):
     for item in root_dir.iterdir():
         if item.suffix != '.xml':
             continue
-        # print(f'{"-" * 5} parse {item.name} {"-" * 5}')
 
         tree = ET.parse(item)
         root = tree.getroot()
 
-        titles = root.findall('./doc/field[@name="title"]')
+        # titles = root.findall('./doc/field[@name="title"]')
 
-        for title in titles:
-            # print(title.text)
+        # for title in titles:
+        #     # print(title.text)
+        #     records.append({
+        #         'category': item.name.replace('.xml', ''),
+        #         'title': title.text,
+        #     })
+
+        for doc in root.findall('doc'):
+            title = doc.find('./field[@name="title"]')
+            body = doc.findall('./field[@name="body"]')
+
+            description = [
+                line.text if line.text is not None else '' for line in body
+            ]
+
             records.append({
                 'category': item.name.replace('.xml', ''),
                 'title': title.text,
+                'body': '\n'.join(description),
             })
 
     df = pd.DataFrame(records)
 
-    print(df.head())
+    df.info()
+    print(df['category'].value_counts())
